@@ -1,10 +1,10 @@
 package cmd
 
-import(
-    "github.com/spf13/cobra"
-	"github.com/spf13/viper"
+import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/torukita/lora-trace/cmd/config"
 	"github.com/torukita/lora-trace/trace"
 	"os"
@@ -13,7 +13,7 @@ import(
 )
 
 var (
-	version = "0.0.1"
+	version = "v0.0.2"
 )
 
 func Execute() error {
@@ -34,14 +34,14 @@ func NewRootCmd() *cobra.Command {
 			log.Info("start")
 			nsConfig := &trace.Config{
 				NetworkServer: config.C.NetworkServer,
-				Debug: level,
+				Debug:         level,
 			}
 			mqttConfig := &trace.MqttConfig{
 				Server:   config.C.Server,
 				Username: config.C.Username,
 				Password: config.C.Password,
 				TopicTop: config.C.TopicTop,
-				Debug: level,
+				Debug:    level,
 			}
 
 			mqttClient := trace.NewMQTTClient(mqttConfig)
@@ -53,17 +53,19 @@ func NewRootCmd() *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-			
+
 			<-c
-			
+
 			log.Info("finish")
 		},
 	}
-	
+
 	cobra.OnInitialize(initConfig)
-	cmd.Flags().String("log-level", "info", "panic,fatal,error,warn,info,debug,trace")
-	viper.BindPFlag("log-level", cmd.Flags().Lookup("log-level"))
-	
+	cmd.PersistentFlags().String("log-level", "info", "panic,fatal,error,warn,info,debug,trace")
+	viper.BindPFlag("log-level", cmd.PersistentFlags().Lookup("log-level"))
+
+	cmd.AddCommand(newAddCmd())
+	cmd.AddCommand(newDelCmd())
 	return cmd
 }
 
