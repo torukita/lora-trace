@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	version = "v0.0.2"
+	version = "v0.0.3"
 )
 
 func Execute() error {
@@ -40,7 +40,7 @@ func NewRootCmd() *cobra.Command {
 				Server:   config.C.Server,
 				Username: config.C.Username,
 				Password: config.C.Password,
-				TopicTop: config.C.TopicTop,
+				TraceTopic: config.C.TraceTopic,
 				Debug:    level,
 			}
 

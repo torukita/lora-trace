@@ -12,11 +12,11 @@ import (
 )
 
 type MqttConfig struct {
-	Server   string
-	Username string
-	Password string
-	TopicTop string
-	Debug    log.Level
+	Server     string
+	Username   string
+	Password   string
+	TraceTopic string
+	Debug      log.Level
 }
 
 type MqttClient struct {
@@ -80,7 +80,7 @@ func (c *MqttClient) TraceOn(deveui lorawan.EUI64) error {
 	}
 	b, _ := json.Marshal(trace)
 
-	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TopicTop), 0, false, b); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
@@ -93,21 +93,21 @@ func (c *MqttClient) TraceOff(deveui lorawan.EUI64) error {
 	}
 	b, _ := json.Marshal(trace)
 
-	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TopicTop), 0, false, b); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
 func (c *MqttClient) TraceFrame(deveui lorawan.EUI64, data []byte) error {
-	if token := c.cl.Publish(fmt.Sprintf("%s/frame/%s", c.config.TopicTop, deveui.String()), 0, false, data); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf("%s/frame/%s", c.config.TraceTopic, deveui.String()), 0, false, data); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
 func (c *MqttClient) Run() error {
-	topic := fmt.Sprintf("%s/trace", c.config.TopicTop)
+	topic := fmt.Sprintf("%s/trace", c.config.TraceTopic)
 	var onReceived = func(mc MQTT.Client, m MQTT.Message) {
 		if m.Topic() == topic {
 			var conf traceConfig

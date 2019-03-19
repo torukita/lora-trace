@@ -25,7 +25,7 @@ func newAddCmd() *cobra.Command {
 				Server:   config.C.Server,
 				Username: config.C.Username,
 				Password: config.C.Password,
-				TopicTop: config.C.TopicTop,
+				TraceTopic: config.C.TraceTopic,
 				Debug:    level,
 			}
 
@@ -57,7 +57,7 @@ func newDelCmd() *cobra.Command {
 				Server:   config.C.Server,
 				Username: config.C.Username,
 				Password: config.C.Password,
-				TopicTop: config.C.TopicTop,
+				TraceTopic: config.C.TraceTopic,
 				Debug:    level,
 			}
 
