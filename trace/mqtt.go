@@ -4,11 +4,17 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"time"
+)
+
+const (
+	trace_topic = "%s/trace"
+	frame_topic = "%s/frame/%s"
 )
 
 type MqttConfig struct {
@@ -80,7 +86,7 @@ func (c *MqttClient) TraceOn(deveui lorawan.EUI64) error {
 	}
 	b, _ := json.Marshal(trace)
 
-	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf(trace_topic, c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
@@ -93,21 +99,22 @@ func (c *MqttClient) TraceOff(deveui lorawan.EUI64) error {
 	}
 	b, _ := json.Marshal(trace)
 
-	if token := c.cl.Publish(fmt.Sprintf("%s/trace", c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf(trace_topic, c.config.TraceTopic), 0, false, b); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
 func (c *MqttClient) TraceFrame(deveui lorawan.EUI64, data []byte) error {
-	if token := c.cl.Publish(fmt.Sprintf("%s/frame/%s", c.config.TraceTopic, deveui.String()), 0, false, data); token.Wait() && token.Error() != nil {
+	if token := c.cl.Publish(fmt.Sprintf(frame_topic, c.config.TraceTopic, deveui.String()), 0, false, data); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
 func (c *MqttClient) Run() error {
-	topic := fmt.Sprintf("%s/trace", c.config.TraceTopic)
+	topic := fmt.Sprintf(trace_topic, c.config.TraceTopic)
+
 	var onReceived = func(mc MQTT.Client, m MQTT.Message) {
 		if m.Topic() == topic {
 			var conf traceConfig
@@ -123,7 +130,7 @@ func (c *MqttClient) Run() error {
 		}
 	}
 
-	if token := c.cl.Subscribe("dump/trace/#", 0, onReceived); token.Wait() && token.Error() != nil {
+	if token := c.cl.Subscribe(topic, 0, onReceived); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	log.Trace("mqtt run finish")
